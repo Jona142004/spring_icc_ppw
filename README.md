@@ -8,7 +8,8 @@ Comando:
 java -version
 
 ```
-![alt text](image.png)
+![alt text](assents/image.png)
+
 
 
 ### 2. Servidor Spring Boot ejecutándose
@@ -24,12 +25,12 @@ Started Fundamentos01Application in 3.659 seconds
 ### 3. Endpoint `/api/status` funcionando
 Acceso: `http://localhost:8080/api/status`
 Respuesta JSON:
-![alt text](image-1.png)
+![alt text](assents/image-1.png)
 
 
 
 ### 4. Estructura del proyecto - Controlador creado
-![alt text](image-2.png)
+![alt text](assents/image-2.png)
 
 **Funcionamiento del endpoint:**
 El controlador `StatusController` utiliza la anotación `@RestController` para exponer un endpoint HTTP GET en la ruta `/api/status`. El método `status()` devuelve un `Map` que se serializa automáticamente a JSON por Spring Boot. La anotación `@GetMapping("/api/status")` mapea las solicitudes HTTP GET a este método específico.
