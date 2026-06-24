@@ -1,6 +1,5 @@
 package ec.edu.ups.icc.fundamentos01.users.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,108 +16,45 @@ import ec.edu.ups.icc.fundamentos01.users.dtos.CreateUserDto;
 import ec.edu.ups.icc.fundamentos01.users.dtos.PartialUpdateUserDto;
 import ec.edu.ups.icc.fundamentos01.users.dtos.UpdateUserDto;
 import ec.edu.ups.icc.fundamentos01.users.dtos.UserResponseDto;
-import ec.edu.ups.icc.fundamentos01.users.mappers.UserMapper;
-import ec.edu.ups.icc.fundamentos01.users.models.UserModel;
+import ec.edu.ups.icc.fundamentos01.users.services.UserService;
 
 @RestController
 @RequestMapping("/api/users")
 public class UsersController {
 
-    private List<UserModel> users = new ArrayList<>();
-    private Long currentId = 1L;
+    private final UserService service;
+
+    public UsersController(UserService service) {
+        this.service = service;
+    }
 
     @GetMapping
     public List<UserResponseDto> findAll() {
-        return users.stream()
-                .map(UserMapper::toResponse)
-                .toList();
+        return service.findAll();
     }
 
     @GetMapping("/{id}")
     public Object findOne(@PathVariable Long id) {
-        return users.stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst()
-                .map(user -> (Object) UserMapper.toResponse(user))
-                .orElseGet(() -> new ErrorResponse("User not found"));
+        return service.findOne(id);
     }
 
     @PostMapping
     public UserResponseDto create(@RequestBody CreateUserDto dto) {
-        UserModel user = UserMapper.toModel(dto);
-        user.setId(currentId++);
-        users.add(user);
-        return UserMapper.toResponse(user);
+        return service.create(dto);
     }
 
     @PutMapping("/{id}")
     public Object update(@PathVariable Long id, @RequestBody UpdateUserDto dto) {
-        UserModel user = users.stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst()
-                .orElse(null);
-
-        if (user == null) {
-            return new ErrorResponse("User not found");
-        }
-
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-
-        return UserMapper.toResponse(user);
+        return service.update(id, dto);
     }
 
     @PatchMapping("/{id}")
     public Object partialUpdate(@PathVariable Long id, @RequestBody PartialUpdateUserDto dto) {
-        UserModel user = users.stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst()
-                .orElse(null);
-
-        if (user == null) {
-            return new ErrorResponse("User not found");
-        }
-
-        if (dto.getName() != null) {
-            user.setName(dto.getName());
-        }
-        if (dto.getEmail() != null) {
-            user.setEmail(dto.getEmail());
-        }
-
-        return UserMapper.toResponse(user);
+        return service.partialUpdate(id, dto);
     }
 
     @DeleteMapping("/{id}")
     public Object delete(@PathVariable Long id) {
-        boolean exists = users.removeIf(u -> u.getId().equals(id));
-        if (!exists) {
-            return new ErrorResponse("User not found");
-        }
-        return new SuccessResponse("Deleted successfully");
-    }
-
-    static class ErrorResponse {
-        public String error;
-
-        public ErrorResponse(String error) {
-            this.error = error;
-        }
-
-        public String getError() {
-            return error;
-        }
-    }
-
-    static class SuccessResponse {
-        public String message;
-
-        public SuccessResponse(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+        return service.delete(id);
     }
 }
