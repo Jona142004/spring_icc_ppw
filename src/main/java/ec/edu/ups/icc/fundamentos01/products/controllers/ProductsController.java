@@ -2,6 +2,7 @@ package ec.edu.ups.icc.fundamentos01.products.controllers;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import ec.edu.ups.icc.fundamentos01.products.dtos.CreateProductDto;
@@ -34,27 +36,29 @@ public class ProductsController {
     }
 
     @GetMapping("/{id}")
-    public Object findOne(@PathVariable Long id) {
+    public ProductResponseDto findOne(@PathVariable Long id) {
         return service.findOne(id);
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ProductResponseDto create(@RequestBody CreateProductDto dto) {
         return service.create(dto);
     }
 
     @PutMapping("/{id}")
-    public Object update(@PathVariable Long id, @RequestBody UpdateProductDto dto) {
+    public ProductResponseDto update(@PathVariable Long id, @RequestBody UpdateProductDto dto) {
         return service.update(id, dto);
     }
 
     @PatchMapping("/{id}")
-    public Object partialUpdate(@PathVariable Long id, @RequestBody PartialUpdateProductDto dto) {
+    public ProductResponseDto partialUpdate(@PathVariable Long id, @RequestBody PartialUpdateProductDto dto) {
         return service.partialUpdate(id, dto);
     }
 
     @DeleteMapping("/{id}")
-    public Object delete(@PathVariable Long id) {
-        return service.delete(id);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 }

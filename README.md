@@ -117,266 +117,6 @@ Esta estructura sigue patrones profesionales de arquitectura backend y es la est
 
 ## 10. Resultados y Evidencias
 
-### 1. Estructura de carpetas implementada
-
-**Captura de la estructura en VSCode:**
-
-![alt text](assents/practica3-estructura.png)
-
-**Estructura visible:**
-- ✅ `users/` con: `models/`, `dtos/`, `mappers/`, `controllers/`
-- ✅ `products/` con la misma estructura
-- ✅ Todos los archivos creados y organizados por dominio
-
----
-
-### 2. Componentes principales creados
-
-#### UserModel
-**Ubicación:** `src/main/java/ec/edu/ups/icc/fundamentos01/users/models/UserModel.java`
-
-![alt text](assents/user-model.png)
-
-**Características:**
-- Propiedades: id, name, email, password, passwordHash, createdAt
-- No tiene anotaciones JPA (solo es un modelo de dominio)
-- Getters y setters completos
-
----
-
-#### DTOs (CreateUserDto, UpdateUserDto, PartialUpdateUserDto, UserResponseDto)
-
-**Ejemplo de CreateUserDto:**
-
-![alt text](assents/create-user-dto.png)
-
-```java
-public class CreateUserDto {
-    private String name;
-    private String email;
-    private String password;
-    // getters y setters
-}
-```
-
-**Ejemplo de UserResponseDto:**
-
-![alt text](assents/user-response-dto.png)
-
-```java
-public class UserResponseDto {
-    private Long id;
-    private String name;
-    private String email;
-    // No incluye password ni passwordHash (seguridad)
-}
-```
-
-**Diferencia:**
-- CreateUserDto: acepta name, email, password (para crear)
-- UpdateUserDto: acepta name, email (sin password)
-- PartialUpdateUserDto: todos los campos opcionales (null)
-- UserResponseDto: solo id, name, email (datos públicos)
-
----
-
-#### UserMapper
-
-**Ubicación:** `src/main/java/ec/edu/ups/icc/fundamentos01/users/mappers/UserMapper.java`
-
-![alt text](assents/user-mapper.png)
-
-**Funciones:**
-```java
-// Convierte DTO → Model (entrada)
-public static UserModel toModel(CreateUserDto dto) { ... }
-
-// Convierte Model → DTO (salida)
-public static UserResponseDto toResponse(UserModel model) { ... }
-```
-
-**Ventaja:** Separación entre lo que entra (DTO) y lo que maneja la aplicación (Model)
-
----
-
-#### UsersController - CRUD completo
-
-**Ubicación:** `src/main/java/ec/edu/ups/icc/fundamentos01/users/controllers/UsersController.java`
-
-![alt text](assents/users-controller-full.png)
-
-**6 Endpoints implementados:**
-
-| Método | Endpoint | Función |
-|--------|----------|---------|
-| GET | `/api/users` | Obtiene todos |
-| GET | `/api/users/{id}` | Obtiene uno por ID |
-| POST | `/api/users` | Crea nuevo |
-| PUT | `/api/users/{id}` | Reemplaza completo |
-| PATCH | `/api/users/{id}` | Actualiza parcial |
-| DELETE | `/api/users/{id}` | Elimina |
-
-**Almacenamiento:**
-- `List<UserModel> users` - simula base de datos en memoria
-- `currentId` - genera IDs únicos automáticamente
-
----
-
-#### ProductModel
-
-**Ubicación:** `src/main/java/ec/edu/ups/icc/fundamentos01/products/models/ProductModel.java`
-
-![alt text](assents/product-model.png)
-
-**Propiedades:**
-```java
-private Long id;
-private String name;
-private Double price;
-private Integer stock;
-private LocalDateTime createdAt;
-```
-
----
-
-#### ProductsController - CRUD idéntico a Users
-
-**Ubicación:** `src/main/java/ec/edu/ups/icc/fundamentos01/products/controllers/ProductsController.java`
-
-![alt text](assents/products-controller-full.png)
-
-**6 Endpoints:**
-
-| Método | Endpoint | Función |
-|--------|----------|---------|
-| GET | `/api/products` | Obtiene todos |
-| GET | `/api/products/{id}` | Obtiene uno por ID |
-| POST | `/api/products` | Crea nuevo |
-| PUT | `/api/products/{id}` | Reemplaza completo |
-| PATCH | `/api/products/{id}` | Actualiza parcial |
-| DELETE | `/api/products/{id}` | Elimina |
-
----
-
-### 3. Aplicación ejecutándose
-
-**Comando:**
-```bash
-./gradlew bootRun
-```
-
-**Salida esperada:**
-```
-Tomcat started on port(s): 8080
-
-Started Fundamentos01Application in 2.5 seconds
-```
-
-![alt text](assents/practica3-running.png)
-
----
-
-### 4. Pruebas en Postman - GET /api/products (vacío)
-
-**Request:**
-```
-GET http://localhost:8080/api/products
-```
-
-**Respuesta:**
-```json
-[]
-```
-
-![alt text](assents/postman-get-empty.png)
-
----
-
-### 5. Pruebas en Postman - POST /api/products (crear 3 productos)
-
-#### Crear Producto 1: Laptop
-
-**Request:**
-```
-POST http://localhost:8080/api/products
-Content-Type: application/json
-
-{
-  "name": "Laptop",
-  "price": 999.99,
-  "stock": 10
-}
-```
-
-**Respuesta:**
-```json
-{
-  "id": 1,
-  "name": "Laptop",
-  "price": 999.99,
-  "stock": 10
-}
-```
-
-![alt text](assents/postman-post-laptop.png)
-
----
-
-#### Crear Producto 2: Mouse
-
-**Request:**
-```
-POST http://localhost:8080/api/products
-Content-Type: application/json
-
-{
-  "name": "Mouse",
-  "price": 29.99,
-  "stock": 50
-}
-```
-
-**Respuesta:**
-```json
-{
-  "id": 2,
-  "name": "Mouse",
-  "price": 29.99,
-  "stock": 50
-}
-```
-
-![alt text](assents/postman-post-mouse.png)
-
----
-
-#### Crear Producto 3: Keyboard
-
-**Request:**
-```
-POST http://localhost:8080/api/products
-Content-Type: application/json
-
-{
-  "name": "Keyboard",
-  "price": 79.99,
-  "stock": 25
-}
-```
-
-**Respuesta:**
-```json
-{
-  "id": 3,
-  "name": "Keyboard",
-  "price": 79.99,
-  "stock": 25
-}
-```
-
-![alt text](assents/postman-post-keyboard.png)
-
----
 
 ### 6. Pruebas en Postman - GET /api/products (con 3 productos)
 
@@ -385,31 +125,8 @@ Content-Type: application/json
 GET http://localhost:8080/api/products
 ```
 
-**Respuesta:**
-```json
-[
-  {
-    "id": 1,
-    "name": "Laptop",
-    "price": 999.99,
-    "stock": 10
-  },
-  {
-    "id": 2,
-    "name": "Mouse",
-    "price": 29.99,
-    "stock": 50
-  },
-  {
-    "id": 3,
-    "name": "Keyboard",
-    "price": 79.99,
-    "stock": 25
-  }
-]
-```
 
-![alt text](assents/postman-get-three.png)
+![alt text](assents/3produc.png)
 
 ---
 
@@ -420,17 +137,9 @@ GET http://localhost:8080/api/products
 GET http://localhost:8080/api/products/1
 ```
 
-**Respuesta:**
-```json
-{
-  "id": 1,
-  "name": "Laptop",
-  "price": 999.99,
-  "stock": 10
-}
-```
 
-![alt text](assents/postman-get-by-id.png)
+
+![alt text](assents/1pro3.png)
 
 ---
 
@@ -441,14 +150,9 @@ GET http://localhost:8080/api/products/1
 DELETE http://localhost:8080/api/products/2
 ```
 
-**Respuesta:**
-```json
-{
-  "message": "Deleted successfully"
-}
-```
 
-![alt text](assents/postman-delete-success.png)
+
+![alt text](assents/deletepro.png)
 
 ---
 
@@ -466,158 +170,64 @@ DELETE http://localhost:8080/api/products/999
 }
 ```
 
-![alt text](assents/postman-delete-fail.png)
+![alt text](assents/borrarpro.png)
 
 ---
 
-## 11. Explicación de la arquitectura
 
-### Flujo de una solicitud HTTP
 
-```
-POST /api/products
-{
-  "name": "Laptop",
-  "price": 999.99,
-  "stock": 10
-}
-        ↓
-@RestController ProductsController
-        ↓
-@PostMapping create(CreateProductDto dto)
-        ↓
-ProductMapper.toModel(dto) → ProductModel
-        ↓
-Asignar ID automático
-        ↓
-Agregar a List<ProductModel> products
-        ↓
-ProductMapper.toResponse(model) → ProductResponseDto
-        ↓
-HTTP 200 OK
-{
-  "id": 1,
-  "name": "Laptop",
-  "price": 999.99,
-  "stock": 10
-}
-```
+
+# Práctica 4: Spring Boot - Servicios e Inyección de Dependencias
+
+## 8. Resultados y Evidencias
+
+### 1. Captura de ProductServiceImpl.java
+
+![alt text](assents/practica4-product-service-impl.png)
+
+
 
 ---
 
-### Ventajas de los DTOs
+### 2. Captura de ProductsController.java
 
-**Sin DTOs (problema):**
-```java
-// El cliente envaría todo, incluso datos internos
-{
-  "id": 1,
-  "name": "Laptop",
-  "password": "123456",      // ❌ Expone datos sensibles
-  "passwordHash": "HASH_123",// ❌ Datos internos
-  "createdAt": "2024-12-18" // ❌ No debería venir del cliente
-}
-```
+![alt text](assents/practica4-products-controller.png)
 
-**Con DTOs (solución):**
-```java
-// CreateProductDto - Solo acepta lo necesario
-{
-  "name": "Laptop",
-  "price": 999.99,
-  "stock": 10
-}
-
-// ProductResponseDto - Solo devuelve datos públicos
-{
-  "id": 1,
-  "name": "Laptop",
-  "price": 999.99,
-  "stock": 10
-}
-// Nota: No expone createdAt ni datos internos
-```
 
 ---
 
-### Ventajas de los Mappers
+### 3. Explicación breve: ¿Cómo se inyecta el servicio en el controlador?
 
-**Sin Mapper (problema - duplicación):**
-```java
-@PostMapping
-public ProductModel create(@RequestBody CreateProductDto dto) {
-    ProductModel product = new ProductModel();
-    product.setName(dto.getName());          // ❌ Copia manual
-    product.setPrice(dto.getPrice());        // ❌ Copia manual
-    product.setStock(dto.getStock());        // ❌ Copia manual
-    product.setId(currentId++);
-    product.setCreatedAt(LocalDateTime.now());
-    products.add(product);
-    
-    ProductResponseDto response = new ProductResponseDto();
-    response.setId(product.getId());         // ❌ Copia manual
-    response.setName(product.getName());     // ❌ Copia manual
-    response.setPrice(product.getPrice());   // ❌ Copia manual
-    response.setStock(product.getStock());   // ❌ Copia manual
-    return response;
-}
-```
+**Inyección de Dependencias por Constructor:**
 
-**Con Mapper (solución - centralizado):**
-```java
-@PostMapping
-public ProductResponseDto create(@RequestBody CreateProductDto dto) {
-    ProductModel product = ProductMapper.toModel(dto);    // ✅ Delegado
-    product.setId(currentId++);
-    products.add(product);
-    return ProductMapper.toResponse(product);             // ✅ Delegado
-}
-```
+1. **Spring detecta la dependencia:**
+   ```java
+   private final ProductService service;
+   ```
 
-**Ventaja:** Si cambian los campos, solo se edita el Mapper, no todos los endpoints.
+2. **El controlador solicita la inyección mediante constructor:**
+   ```java
+   public ProductsController(ProductService service) {
+       this.service = service;
+   }
+   ```
 
----
+3. **Spring busca una implementación de `ProductService`:**
+   - Encuentra `ProductServiceImpl` porque tiene anotación `@Service`
 
-## 12. Diferencia entre CRUD sin servicios vs con servicios (siguiente práctica)
+4. **Spring crea automáticamente la instancia y la inyecta:**
+   - No necesitamos hacer `new ProductServiceImpl()`
+   - Spring lo hace por nosotros
 
-### Práctica 3 (actual - sin servicios)
-```
-Request → Controller → Lógica de negocio → List (memoria) → Response
-```
+5. **El controlador usa el servicio:**
+   ```java
+   @GetMapping
+   public List<ProductResponseDto> findAll() {
+       return service.findAll();  // Delega al servicio
+   }
+   ```
 
-**Problema:** El controlador hace todo (mezcla responsabilidades)
-
----
-
-### Práctica 4 (siguiente - con servicios y JPA)
-```
-Request → Controller → Service → Repository → Base de datos → Response
-```
-
-**Mejora:** Cada capa tiene su responsabilidad clara
-
----
-
-## 13. Resumen de lo implementado
-
-✅ **UserModel y ProductModel** - Modelos de dominio sin JPA  
-✅ **4 DTOs por recurso** - Create, Update, PartialUpdate, Response  
-✅ **Mappers** - Conversión automática entre DTOs y Models  
-✅ **6 Endpoints CRUD** - GET, GET/:id, POST, PUT, PATCH, DELETE  
-✅ **Almacenamiento en memoria** - List<Model> como BD temporal  
-✅ **IDs automáticos** - currentId generado por el backend  
-✅ **Manejo de errores** - Respuestas claras cuando no existe recurso  
-✅ **Separación de responsabilidades** - DTOs, Models, Mappers, Controllers  
-
----
-
-## 14. Próximos pasos (Práctica 4)
-
-- Implementar `@Service` para lógica de negocio
-- Usar `@Repository` con Spring Data JPA
-- Conectar a base de datos H2 o PostgreSQL
-- Agregar validaciones con `@Valid`
-- Implementar manejo global de excepciones
+**Ventaja:** El controlador queda limpio y solo coordina, no implementa lógica.
 
 
 

@@ -9,9 +9,9 @@ import ec.edu.ups.icc.fundamentos01.users.dtos.UserResponseDto;
 
 public interface UserService {
     List<UserResponseDto> findAll();
-    Object findOne(Long id);
+    UserResponseDto findOne(Long id);
     UserResponseDto create(CreateUserDto dto);
-    Object update(Long id, UpdateUserDto dto);
-    Object partialUpdate(Long id, PartialUpdateUserDto dto);
-    Object delete(Long id);
+    UserResponseDto update(Long id, UpdateUserDto dto);
+    UserResponseDto partialUpdate(Long id, PartialUpdateUserDto dto);
+    void delete(Long id);
 }
