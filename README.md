@@ -48,12 +48,12 @@ Spring Boot proporciona un servidor embebido (Tomcat) integrado que se inicia au
 ![alt text](assents/spring%20src.png)
 
 **Estructura visible:**
-- ✅ Paquete raíz: `ec.edu.ups.icc.fundamentos01`
-- ✅ Módulo `products/` con carpetas: `controllers/`, `services/`, `repositories/`, `entities/`, `dtos/`, `mappers/`
-- ✅ Módulo `users/` con la misma estructura
-- ✅ Módulo `auth/` con la misma estructura
-- ✅ Carpetas globales: `config/`, `utils/`
-- ✅ Archivo principal: `Fundamentos01Application.java`
+-  Paquete raíz: `ec.edu.ups.icc.fundamentos01`
+-  Módulo `products/` con carpetas: `controllers/`, `services/`, `repositories/`, `entities/`, `dtos/`, `mappers/`
+-  Módulo `users/` con la misma estructura
+-  Módulo `auth/` con la misma estructura
+-  Carpetas globales: `config/`, `utils/`
+-  Archivo principal: `Fundamentos01Application.java`
 
 ---
 
@@ -81,9 +81,9 @@ public class Fundamentos01Application {
 ```
 
 **Verificación:**
-- ✅ Package raíz correcto: `ec.edu.ups.icc.fundamentos01`
-- ✅ Anotación `@SpringBootApplication` que activa `@ComponentScan`
-- ✅ Ubicación permite que Spring detecte todos los controladores y servicios en los subpaquetes
+-  Package raíz correcto: `ec.edu.ups.icc.fundamentos01`
+-  Anotación `@SpringBootApplication` que activa `@ComponentScan`
+-  Ubicación permite que Spring detecte todos los controladores y servicios en los subpaquetes
 
 ---
 
@@ -229,6 +229,85 @@ DELETE http://localhost:8080/api/products/999
 
 **Ventaja:** El controlador queda limpio y solo coordina, no implementa lógica.
 
+# Práctica 5: Spring Boot - Persistencia con PostgreSQL, JPA y Repositorios
+
+## 20. Resultados y Evidencias
+
+### 1. Captura de 5 productos creados en PostgreSQL
+
+**Consulta ejecutada:**
+```sql
+SELECT * FROM products;
+```
+
+**Captura desde terminal psql, DBeaver o VS Code PostgreSQL:**
+
+![alt text](assents/5productos.png)
+
+**Evidencia visible:**
+-  Tabla `products` con 5 registros
+-  Columnas: id, name, price, stock, created_at, updated_at, deleted
+-  Datos persistidos en PostgreSQL
+
+---
+
+### 2. Explicación: Flujo de datos desde API REST hasta PostgreSQL y viceversa
+
+#### **De Cliente a Base de Datos (Inserción):**
+
+```
+POST /api/products
+  ↓
+ProductsController
+  ↓
+ProductService.create(CreateProductDto)
+  ↓
+ProductMapper.toModelFromDTO(CreateProductDto) → ProductModel
+  ↓
+ProductMapper.toEntityFromModel(ProductModel) → ProductEntity
+  ↓
+ProductRepository.save(ProductEntity)
+  ↓
+BaseEntity @PrePersist: createdAt = NOW(), deleted = false
+  ↓
+PostgreSQL: INSERT INTO products (name, price, stock, created_at, deleted)
+  ↓
+Base de datos guarda registro con ID generado automáticamente
+```
+
+#### **De Base de Datos a Cliente (Lectura):**
+
+```
+GET /api/products
+  ↓
+ProductsController
+  ↓
+ProductService.findAll()
+  ↓
+ProductRepository.findAll() → List<ProductEntity>
+  ↓
+ProductMapper.toModelFromEntity(ProductEntity) → ProductModel
+  ↓
+ProductMapper.toResponse(ProductModel) → ProductResponseDto
+  ↓
+HTTP 200 OK con JSON de productos
+  ↓
+Cliente recibe datos
+```
+
+---
+
+### 3. Rol de BaseEntity
+
+**BaseEntity es una superclase que:**
+
+-  **Centraliza campos comunes:** id, createdAt, updatedAt, deleted
+-  **@MappedSuperclass:** No crea tabla propia, sus campos se heredan en UserEntity y ProductEntity
+-  **@PrePersist:** Ejecuta `onCreate()` automáticamente antes de insertar → asigna createdAt y deleted=false
+-  **@PreUpdate:** Ejecuta `onUpdate()` automáticamente antes de actualizar → asigna updatedAt
+-  **@GeneratedValue(IDENTITY):** La base de datos genera el ID automáticamente, no el código
+
+**Ventaja:** Ambas entidades (User, Product) heredan esta lógica sin duplicar código. Cualquier nueva entidad que extienda BaseEntity tendrá automáticamente auditoría de fechas y marca de eliminación lógica.
 
 
 
@@ -237,3 +316,72 @@ DELETE http://localhost:8080/api/products/999
 
 
 
+# Práctica 6: Spring Boot - Validación de DTOs y Control de Datos de Entrada
+
+## 13. Resultados y Evidencias
+
+### 1. Captura de respuesta de error al enviar un POST inválido
+
+**Request inválido:**
+```json
+POST http://localhost:8080/api/products
+{
+  "name": "",
+  "price": -5,
+  "stock": -1
+}
+```
+
+**Captura de la respuesta en Postman:**
+
+![alt text](assents/error404.png)
+
+**Evidencia visible:**
+- ✅ HTTP Status: `400 Bad Request`
+- ✅ Validaciones activas:
+  - `name` vacío → rechazado
+  - `price: -5` → rechazado (debe ser > 0)
+  - `stock: -1` → rechazado (no puede ser negativo)
+
+---
+
+
+
+#### **B. Crear producto válido**
+
+**Request:**
+```json
+POST http://localhost:8080/api/products
+{
+  "name": "Monitor",
+  "price": 250.00,
+  "stock": 10
+}
+```
+
+**Captura:**
+
+![alt text](assents/datosvalidaciones.png)
+
+**Respuesta esperada:**
+- ✅ HTTP 201 Created
+- ✅ Producto guardado con id, createdAt, deleted=false
+
+---
+
+
+
+
+### 3. Resumen de validaciones implementadas
+
+| Validación | Tipo | Ubicación |
+|-----------|------|-----------|
+| Nombre obligatorio | DTO | CreateProductDto |
+| Nombre mín 3 caracteres | DTO | CreateProductDto |
+| Precio obligatorio | DTO | CreateProductDto |
+| Precio > 0 | DTO | CreateProductDto |
+| Stock obligatorio | DTO | CreateProductDto |
+| Stock ≥ 0 | DTO | CreateProductDto |
+| No actualizar eliminado | Servicio | ProductServiceImpl |
+| No devolver eliminados | Servicio | ProductServiceImpl.findAll() |
+| Email único | Servicio | UserServiceImpl |
