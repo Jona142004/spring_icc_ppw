@@ -39,6 +39,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto create(CreateUserDto dto) {
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new IllegalStateException("Email already registered");
+        }
         UserEntity entity = UserMapper.toEntityFromModel(UserMapper.toModelFromDTO(dto));
         UserEntity saved = userRepository.save(entity);
         return UserMapper.toResponse(UserMapper.toModelFromEntity(saved));
@@ -48,6 +51,10 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto update(Long id, UpdateUserDto dto) {
         UserEntity entity = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
+
+        if (entity.isDeleted()) {
+            throw new IllegalStateException("Cannot update deleted user");
+        }
 
         entity.setName(dto.getName());
         entity.setEmail(dto.getEmail());

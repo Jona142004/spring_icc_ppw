@@ -24,6 +24,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductResponseDto> findAll() {
         return productRepository.findAll().stream()
+                .filter(p -> !p.isDeleted())
                 .map(ProductMapper::toModelFromEntity)
                 .map(ProductMapper::toResponse)
                 .toList();
@@ -48,6 +49,10 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponseDto update(Long id, UpdateProductDto dto) {
         ProductEntity entity = productRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Product not found"));
+
+        if (entity.isDeleted()) {
+            throw new IllegalStateException("Cannot update deleted product");
+        }
 
         entity.setName(dto.getName());
         entity.setPrice(dto.getPrice());
@@ -77,7 +82,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void delete(Long id) {
         ProductEntity entity = productRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Product not found"));
+                .orElseThrow(() -> new IllegalStateException("Product already deleted"));
+        if (entity.isDeleted()) {
+            throw new IllegalStateException("Product already deleted");
+        }
         entity.setDeleted(true);
         productRepository.save(entity);
     }
